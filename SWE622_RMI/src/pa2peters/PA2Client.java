@@ -5,7 +5,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 public class PA2Client {
-	static final int PORTNUM = 3210;
+	static final int PORTNUM = 3333;
+	static final String REGISTRYSERVER = "localhost";
 	
 	public static void process(String[] args){
 		if(args.length < 2){
@@ -41,24 +42,25 @@ public class PA2Client {
 		}
 	}
 	
-	private static PA2Operate getServer(){
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new SecurityManager());
-        }
+	private static PA2Operations getServer(){
+//        if (System.getSecurityManager() == null) {
+//            System.setSecurityManager(new SecurityManager());
+//        }
         try {
             String name = "PA2Server";
-            Registry registry = LocateRegistry.getRegistry(PORTNUM);
-            PA2Operate server = (PA2Operate) registry.lookup(name);  
+            Registry registry = LocateRegistry.getRegistry(REGISTRYSERVER, PORTNUM);
+            PA2Operations server = (PA2Operations) registry.lookup(name);  
             return server;
         } catch (Exception e) {
             System.err.println("PA2Client error.  Make sure server is running before running the client.");
+            System.err.println(e.getMessage());
             System.exit(1);
         }
         return null;
 	}
 
 	private static void removeItem(String key) {
-		PA2Operate server = getServer();
+		PA2Operations server = getServer();
 		try {
 			server.removeItem(key);
 		} catch (RemoteException e) {
@@ -67,7 +69,7 @@ public class PA2Client {
 	}
 
 	private static void queryItem(String key) {
-		PA2Operate server = getServer();
+		PA2Operations server = getServer();
 		try {
 			String out = server.queryItem(key);
 			if(out != null)
@@ -78,7 +80,7 @@ public class PA2Client {
 	}
 
 	private static void addItem(String key, String value) {
-		PA2Operate server = getServer();
+		PA2Operations server = getServer();
 		try {
 			server.addItem(key, value);
 		} catch (RemoteException e) {
