@@ -89,11 +89,10 @@ public class PA2Client {
 	}
 
 	private static void shutdownServer() {
+		PA2Operations server = getServer();
 		try {
-			String name = "PA2Server";
-			Registry registry = LocateRegistry.getRegistry(PORTNUM);
-			registry.unbind(name);
-		} catch(Exception e){
+			server.shutdown();
+		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
 	}
