@@ -26,11 +26,14 @@ public class Implementation extends UnicastRemoteObject
     @Override
     public String query(String key) throws RemoteException {
         String value = database.get(key);
+        if (value == null) {
+        	value = "Error: Could not find key in database.";
+        }
         return value;
     }
 
     @Override
-    public void shutdown() throws Exception {
+    public void shutdown() throws RemoteException, NotBoundException {
         Server.registry.unbind(API.class.getSimpleName());
         Implementation.unexportObject(this, true);
     }

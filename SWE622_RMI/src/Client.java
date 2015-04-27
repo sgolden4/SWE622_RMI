@@ -1,41 +1,97 @@
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.*;
 
 public class Client implements Runnable {
-    private static final String HOST = "localhost";
-    private static final int PORT = 2000;
-    private static Registry registry;
-    private String[] args;
+	private static final String HOST = "localhost";
+	private static final int PORT = 3333;
+	private String[] args;
 
-    public Client(String [] args) {
-        this.args = args;
-    }
+	public Client(String [] args) {
+		this.args = args;
+	}
 
-    public void run(){
-        try {
-            registry = LocateRegistry.getRegistry(HOST,PORT);
-            API remote = (API) registry.lookup(API.class.getSimpleName());
-            if (args.length >= 3) {
-                if (args.length >= 4) {
-                    remote.add(args[2], args[3]);
-                } else {
-                    switch (args[1].toLowerCase()) {
-                    case "remove": remote.remove(args[2]); break;
-                    case "query": System.out.println(remote.query(args[2])); break;
-                    default: System.err.println("Invalid arguments"); System.exit(0);
-                    }
-                }
-            } else if (args.length == 2) {
-                if(args[1].equalsIgnoreCase("shutdown")) {
-                    remote.shutdown();
-                } else if (args[1].equalsIgnoreCase("printData")) {
-                    System.out.println(remote.printData());
-                } else {
-                    System.err.println("Invalid arguments");
-                    System.exit(0);
-                } 
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+	public void run(){
+		switch (args.length) {
+			case 2: 
+				if(args[1].equalsIgnoreCase("shutdown")) {
+					shutdown();
+				} else {
+					printHelp();
+				} 
+				break;
+			case 3: 
+				switch (args[1].toLowerCase()) {
+					case "remove": remove(args[2]); break;
+					case "query": System.out.println(query(args[2])); break;
+					default: printHelp();
+				}
+				break;
+			case 4: 
+				if(args[1].equalsIgnoreCase("add")) {
+					add(args[2], args[3]);
+				} else {
+					printHelp();
+				} 
+				break;
+			default: printHelp();
+		}
+
+	}
+
+	private static void add(String key, String value) {
+		API Server = getServer();
+		try {
+			Server.add(key, value);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static String query(String key) {
+		API Server = getServer();
+		try {
+			return Server.query(key);
+		} catch (RemoteException e) {
+			return "Failed Query.\n" + e.getMessage();
+		}
+	}
+
+	private static void shutdown() {
+		API Server = getServer();
+		try {
+			Server.shutdown();
+		} catch (RemoteException | NotBoundException e) {
+			System.out.println("Failed Shutdown.\n" + e.getMessage());
+		}
+	}
+
+	private static void remove(String key) {
+		API Server = getServer();
+		try {
+			Server.remove(key);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static API getServer() {
+		try {
+			Registry registry = LocateRegistry.getRegistry(HOST,PORT);
+			return (API) registry.lookup(API.class.getSimpleName());	
+		} catch (RemoteException | NotBoundException e) {
+			System.out.println("Failed to locate server.");
+			System.exit(1);
+		}
+		return null;
+	}
+	
+	private static void printHelp() {
+		System.out.println("Invalid command");
+		System.out.println("To add an item: java -jar pa2.jar client add <key> <value>");
+		System.out.println("To remove an item: java -jar pa2.jar client remove <key>");
+		System.out.println("To query an item: java -jar pa2.jar client query <key>");
+		System.out.println("To shutdown the server: java -jar pa2.jar client shutdown");
+		
+	}
 }
