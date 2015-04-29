@@ -51,7 +51,11 @@ public class Client implements Runnable {
 	private static String query(String key) {
 		API Server = getServer();
 		try {
-			return Server.query(key);
+			String value = Server.query(key);
+	        if (value == null) {
+	        	System.exit(1);  //Instructions indicate to print nothing at all and return an error code
+	        }
+			return value;
 		} catch (RemoteException e) {
 			return "Failed Query.\n" + e.getMessage();
 		}

@@ -26,9 +26,6 @@ public class Implementation extends UnicastRemoteObject
     @Override
     public String query(String key) throws RemoteException {
         String value = database.get(key);
-        if (value == null) {
-        	value = "Error: Could not find key in database.";
-        }
         return value;
     }
 
